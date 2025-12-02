@@ -1,44 +1,63 @@
 #!/bin/bash
 
+# ==========================================
+# SETUP-PERIPHERALS.SH
+# Configures Keyboard (Apple Driver + Keyd) and Mouse.
+# ==========================================
 
 GREEN="\e[32m"
 YELLOW="\e[33m"
 RESET="\e[0m"
 
-echo -e "${YELLOW}Starting keyboard Configuration...${RESET}"
+echo -e "${YELLOW}Starting Peripheral Configuration...${RESET}"
 
 # ----------------------------------------------------------------
-# 1. KEYBOARD CONFIGURATION (Fix for Apple-layout Keyboards)
+# 1. KERNEL DRIVER (hid_apple)
 # ----------------------------------------------------------------
-# Only apply this if you are using your specific mechanical keyboard
-# that requires the 'hid_apple' driver to behave like Windows.
+# Fixes: ISO Layout (<> and ½), F-Keys.
+# We REMOVED 'swap_opt_cmd=1' because keyd handles swaps now.
 
-# File path for the config
-CONF_FILE="/etc/modprobe.d/hid_apple.conf"
-CONF_CONTENT="options hid_apple fnmode=1 swap_opt_cmd=1"
+# ----------------------------------------------------------------
+# 1. KEY REMAPPING (keyd)
+# ----------------------------------------------------------------
+# Handles: Caps->Esc, Left Swap, Right AltGr/Ctrl logic.
 
-echo -e "\n[Keyboard] Checking for Apple-layout fix..."
+echo -e "\n[Keyd] Checking Key Remapper..."
 
-# Check if the config already exists
-if grep -q "fnmode=1" "$CONF_FILE" 2>/dev/null; then
-    echo -e "${GREEN}✔ Keyboard is already configured.${RESET}"
-else
-    # Ask user before applying (Safety check for other machines)
-    read -p "Do you want to apply the Apple-to-Windows Keyboard fix? (y/n): " choice
-    if [[ "$choice" == "y" || "$choice" == "Y" ]]; then
-        echo "Applying fix..."
-        echo "$CONF_CONTENT" | sudo tee "$CONF_FILE" > /dev/null
-        
-        # Reload the driver immediately so you don't have to reboot
-        echo "Reloading kernel module..."
-        sudo rmmod hid_apple 2>/dev/null
-        sudo modprobe hid_apple
-        
-        echo -e "${GREEN}✔ Keyboard fix applied!${RESET}"
-    else
-        echo "Skipping keyboard fix."
-    fi
+# 1. Install keyd if missing
+if ! command -v keyd &> /dev/null; then
+    echo "Installing keyd..."
+    yay -S --needed --noconfirm keyd
+    sudo systemctl enable --now keyd
 fi
 
+# 2. Sync Configuration
+SOURCE_CONFIG="$HOME/omarchy-supplement/config/keyd.conf"
+DEST_CONFIG="/etc/keyd/default.conf"
 
-echo -e "\n${GREEN}Keyboard setup complete.${RESET}"
+if [ -f "$SOURCE_CONFIG" ]; then
+    # Check if files differ
+    if ! cmp -s "$SOURCE_CONFIG" "$DEST_CONFIG"; then
+        echo -e "${YELLOW}New keyboard configuration found.${RESET}"
+        read -p "Update keyd configuration map? (y/n): " choice
+        if [[ "$choice" == "y" || "$choice" == "Y" ]]; then
+            echo "Copying config to /etc/keyd/default.conf..."
+            sudo cp "$SOURCE_CONFIG" "$DEST_CONFIG"
+            
+            echo "Reloading keyd..."
+            sudo keyd reload
+            echo -e "${GREEN}✔ Keymap updated.${RESET}"
+        else
+            echo "Skipping keymap update."
+        fi
+    else
+        echo -e "${GREEN}✔ Keyd config is up to date.${RESET}"
+    fi
+else
+    echo -e "${RED}❌ Error: Source config not found at $SOURCE_CONFIG${RESET}"
+fi
+
+# ----------------------------------------------------------------
+# 3. DONE
+# ----------------------------------------------------------------
+echo -e "\n${GREEN}Peripheral setup complete.${RESET}"
