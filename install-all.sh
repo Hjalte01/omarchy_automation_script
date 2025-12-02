@@ -17,6 +17,9 @@ set -e
 # setup dotfiles 
 # ./install-dotfiles.sh
 
+# setup hardware
+./bin/fix_apple_hid_keyboard.sh
+
 # Check Health
 ./health-check.sh
 
