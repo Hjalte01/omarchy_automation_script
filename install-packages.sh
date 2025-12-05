@@ -15,7 +15,6 @@ PKGS=(
     "stow"
     "firefox"
     "ghostty"
-    "discord"
     "fastfetch"
         # INSERT_HERE
 )

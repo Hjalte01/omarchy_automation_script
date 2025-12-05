@@ -1,10 +1,5 @@
 #!/bin/bash
 
-# ==========================================
-# SETUP-PERIPHERALS.SH
-# Configures Keyboard (Apple Driver + Keyd) and Mouse.
-# ==========================================
-
 GREEN="\e[32m"
 YELLOW="\e[33m"
 RESET="\e[0m"
@@ -12,15 +7,9 @@ RESET="\e[0m"
 echo -e "${YELLOW}Starting Peripheral Configuration...${RESET}"
 
 # ----------------------------------------------------------------
-# 1. KERNEL DRIVER (hid_apple)
-# ----------------------------------------------------------------
-# Fixes: ISO Layout (<> and ½), F-Keys.
-# We REMOVED 'swap_opt_cmd=1' because keyd handles swaps now.
-
-# ----------------------------------------------------------------
 # 1. KEY REMAPPING (keyd)
 # ----------------------------------------------------------------
-# Handles: Caps->Esc, Left Swap, Right AltGr/Ctrl logic.
+# Handles: Left Swap, Right AltGr/Ctrl logic.
 
 echo -e "\n[Keyd] Checking Key Remapper..."
 
@@ -32,7 +21,7 @@ if ! command -v keyd &> /dev/null; then
 fi
 
 # 2. Sync Configuration
-SOURCE_CONFIG="$HOME/omarchy-supplement/config/keyd.conf"
+SOURCE_CONFIG="$HOME/omarchy-supplement/config/keyd_variants/win.conf"
 DEST_CONFIG="/etc/keyd/default.conf"
 
 if [ -f "$SOURCE_CONFIG" ]; then
