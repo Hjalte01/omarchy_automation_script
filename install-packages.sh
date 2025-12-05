@@ -16,6 +16,7 @@ PKGS=(
     "firefox"
     "ghostty"
     "fastfetch"
+    "keyd"
         # INSERT_HERE
 )
 
