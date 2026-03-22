@@ -15,7 +15,7 @@ set -e
 ./install-waybar-transparent.sh
 
 # setup dotfiles 
-# ./install-dotfiles.sh
+./install-dotfiles.sh
 
 # setup hardware
 ./bin/fix_apple_hid_keyboard.sh
